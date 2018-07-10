@@ -1,0 +1,73 @@
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+	{% set cp = doc.company %}
+	{% set cl = doc.client %}
+	{% set tipo_documento = doc.tipoDoc|catalog('01') %}
+	<tbody>
+		<tr>
+			<td colspan="2" style="padding:5px;background-color:#DF471C;">
+				<img src="{{ params.system.logo|image_b64 }}" style="height:60px;float:left;">
+				<div style="padding:10px;font-size:35px;color:#ffffff;float:left;">{{ cp.razonSocial }}</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding:25px 10px 20px;font-size:17px;">
+				Hola <span style="color:#DF471C;font-weight: bold;">{{ cl.rznSocial }}</span>,<br>Te acabamos de emitir una <span style="color:#DF471C;font-weight: bold;">{{ tipo_documento }}</span> a trav&eacute;s de nuestro sistema.
+			</td>
+		</tr>
+		<tr>
+			<td style="padding:5px 10px;font-size:17px;font-weight:bold;width:200px;">
+				Numero de Factura:
+			</td>
+			<td style="padding:5px 10px;font-size:17px;color:#DF471C;font-weight:bold;">
+				{{ doc.serie }}-{{ doc.correlativo }}
+			</td>
+		</tr>
+		<tr>
+			<td style="padding:5px 10px;font-size:17px;font-weight:bold;">
+				Fecha de Emisi&oacute;n:
+			</td>
+			<td style="padding:5px 10px;font-size:17px;color:#DF471C;font-weight:bold;">
+				{{ doc.fechaEmision|date('d-m-Y') }}
+			</td>
+		</tr>
+		{% if doc.fecVencimiento is defined and doc.fecVencimiento and doc.fecVencimiento != '' %}
+		<tr>
+			<td style="padding:5px 10px;font-size:17px;font-weight:bold;">
+				Fecha de Vencimiento:
+			</td>
+			<td style="padding:5px 10px;font-size:17px;color:#DF471C;font-weight:bold;">
+				{{ doc.fecVencimiento|date('d-m-Y') }}
+			</td>
+		</tr>
+		{% endif %}
+		<tr>
+			<td style="padding:5px 10px;font-size:17px;font-weight:bold;">
+				Monto Total:
+			</td>
+			<td style="padding:5px 10px;font-size:17px;color:#DF471C;font-weight:bold;">
+				{{ doc.mtoImpVenta|n_format }} {{ doc.tipoMoneda|catalog('021') }}
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding:20px 10px;font-size:16px;">
+				Puede ver su {{ tipo_documento }} descargando el archivo adjunto o haciendo click en el enlace.<br>
+				<a style="color:#DF471C;text-decoration:none;font-weight:bold;" href="{{ params.user.url_consulta }}" target="_blank">{{ params.user.url_consulta }}</a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding:15px 10px;font-size:16px;">
+				Atentamente,<br/><br/><strong>{{ cp.razonSocial }}</strong>
+				<hr>
+				<p style="font-size:14px;">Cualquier consulta por favor comunicarse con nuestra Central Telef&oacute;nica: <strong>{{ params.user.telefono }}</strong>, Horario de atenci&oacute;n: <strong>{{ params.user.horario_atencion }}</strong></p>
+				<hr>
+				<p style="font-size:14px;font-weight:bold;">Este es un sistema autom&aacute;tico de aviso, por favor no responda este correo.</p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding:10px;font-weight:normal;font-size:13px;text-align:justify;">
+				<hr>
+				El correo presente y su(s) documento(s) adjunto(s) contiene informaci&oacute;n confidencial, y est&aacute; destinado exclusivamente al uso de la persona o entidad a la que va dirigida. Si usted no es el destinatario se&ntilde;alado, no puede difundir, distribuir o copiar este correo. Por favor notifique inmediatamente al emisor si usted ha recibido este correo electr&oacute;nico por error, y elimine el correo de su sistema. Si usted no es el destinatario, se le notifica que revelar, copiar, distribuir o tomar cualquier acci&oacute;n basada en el contenido de esta informaci&oacute;n est&aacute; estrictamente prohibida.
+			</td>
+		</tr>
+	</tbody>
+</table>

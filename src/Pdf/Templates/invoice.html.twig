@@ -1,0 +1,332 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style type="text/css">
+        * {
+            font-family: 'arial';
+            font-size: 14px;
+        }
+
+        #cabecera, #cliente, #detalle, #totales, #pie, #final {
+            width: 100%;
+        }
+
+        #cabecera {
+            height: 120px;
+        }
+
+        #final {
+            position: absolute;
+            bottom: 0;
+            border: 1px solid #ccc;
+            /*padding: 5px;*/
+        }
+
+        .logo {
+            width: 100px;
+        }
+
+        .cia {
+            width: 530px;
+        }
+
+        .secuencia {
+            width: 250px;
+            border: 1px solid #111;
+            border-radius: 5px;
+        }
+
+        .secuencia div {
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        .logo, .cia, .secuencia {
+            float: left;
+            /*border: 1px solid #ccc;*/
+        }
+
+        #detalle .titulo {
+            font-weight: bold;
+            background-color: #DF471C;
+            color: #FFF;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        #detalle table {
+            border-collapse: collapse;
+        }
+        #detalle table td {
+            border: 1px solid #fff;
+        }
+
+        #detalle table tbody tr:nth-child(odd) td{
+            background: #eee;
+        }
+
+        #detalle table tbody tr:nth-child(even) td{
+            background: #fff;
+        }
+
+    </style>
+</head>
+<body style="padding:20px 0;">
+    {% set cp = doc.company %}
+    {% set isNota = doc.tipoDoc in ['07', '08'] %}
+    {% set isAnticipo = doc.totalAnticipos is defined and doc.totalAnticipos > 0 %}
+    {% set name = doc.tipoDoc|catalog('01') %}
+    <div id="cabecera">
+        <div class="logo">
+            <img src="{{ params.system.logo|image_b64 }}" height="100" style="text-align:center" border="0">
+        </div>
+        <div class="cia">
+            <div style="font-size:25px;font-weight:bold;color:#DF471C;padding-top:5px;">{{ cp.razonSocial }}</div>
+            <div style="font-weight:bold;">
+                {{ cp.address.direccion }} - {{ cp.address.departamento }} - {{ cp.address.provincia }} - {{ cp.address.distrito }}
+            </div>
+            <div style="font-weight:bold;padding-top:3px;">{{ params.user.header|raw }}</div>
+        </div>
+        <div class="secuencia">
+            <div style="font-size:18px;font-weight:bold;text-align:center;">R.U.C.: {{ cp.ruc }}</div>
+            <div style="font-size:18px;font-weight:bold;text-align:center;">{{ name }} ELECTRÓNICA</div>
+            <div style="font-size:18px;font-weight:bold;text-align:center;">No.: <span>{{ doc.serie }}-{{ doc.correlativo }}</span></div>
+        </div>
+    </div>
+    <div id="cliente">
+        {% set cl = doc.client %}
+        <table width="100%">
+            <tbody>
+                <tr>
+                    <td width="140"><strong>Fecha Emisión:</strong></td>
+                    <td width="180">{{ doc.fechaEmision|date('d-m-Y') }}</td>
+                    {% if doc.fecVencimiento is defined and doc.fecVencimiento and doc.fecVencimiento != '' %}
+                        <td width="200" align="right"><strong>Fecha Vencimiento:</strong></td>
+                        <td width="200">{{ doc.fecVencimiento|date('d-m-Y') }}</td>
+                    {% else %}
+                        <td width="200"></td>
+                        <td width="200"></td>
+                    {% endif %}
+                </tr>
+                <tr>
+                    <td><strong>Razón Social:</strong></td>
+                    <td colspan="3">{{ cl.rznSocial }}</td>
+                </tr>
+                <tr>
+                    <td><strong>{{ cl.tipoDoc|catalog('06') }}:</strong></td>
+                    <td colspan="3">{{ cl.numDoc }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Dirección:</strong></td>
+                    <td colspan="3">
+                    {% if cl.address %}
+                        {{ cl.address.direccion }} - {{ cl.address.departamento }} - {{ cl.address.provincia }} - {{ cl.address.distrito }}
+                    {% endif %}</td>
+                </tr>
+                {% if isNota %}
+                    <tr>
+                        <td><strong>Motivo de Emisión:</strong></td>
+                        <td colspan="3">{{ doc.desMotivo }}</td>
+                    </tr>
+                {% endif %}
+                {% if isNota %}
+                    <tr>
+                        <td><strong>Tipo Doc. Ref.:</strong></td>
+                        <td>{{ doc.tipDocAfectado|catalog('01') }}</td>
+                        <td align="right"><strong>Documento Ref.:</strong></td>
+                        <td>{{ doc.numDocfectado }}</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td><strong>Tipo Moneda:</strong></td>
+                    <td>{{ doc.tipoMoneda|catalog('021') }}</td>
+                    {% if doc.compra is defined and doc.compra %}
+                        <td align="right"><strong>Orden Compra/Servicio:</strong></td>
+                        <td>{{ doc.compra }}</td>
+                    {% else %}
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="detalle" style="margin-top: 10px;">
+        {% set moneda = doc.tipoMoneda|catalog('02') %}
+        <table width="100%">
+            <thead>
+                <tr>
+                    <td class="titulo" width="80">Cantidad</td>
+                    <td class="titulo" width="60">Unidad</td>
+                    <td class="titulo">Descripción</td>
+                    <td class="titulo" width="100">V. Unitario</td>
+                    <td class="titulo" width="100">V. Total</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for det in doc.details %}
+                    <tr>
+                        <td align="center">
+                            {{ det.cantidad }}
+                        </td>
+                        <td align="center">
+                            {{ det.unidad }}
+                        </td>
+                        <td align="left">
+                            {{ det.descripcion }}
+                        </td>
+                        <td align="right">
+                            {{ det.mtoValorUnitario|number_format(2, '.', ',') }}
+                        </td>
+                        <td align="right">
+                            {{ det.mtoValorVenta|number_format(2, '.', ',') }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div id="totales">
+        <table width="100%" style="margin-top: 10px;">
+            {% if isAnticipo %}
+                <tr>
+                    <td align="right"><strong>Total Anticipo: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.totalAnticipos|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+            {% if doc.mtoOperGravadas %}
+                <tr>
+                    <td align="right"><strong>Op. Gravadas: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoOperGravadas|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+            {% if doc.mtoOperInafectas %}
+                <tr>
+                    <td align="right"><strong>Op. Inafectas: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoOperInafectas|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+            {% if doc.mtoOperExoneradas %}
+                <tr>
+                    <td align="right"><strong>Op. Exoneradas: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoOperExoneradas|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+                <tr>
+                    <td align="right"><strong>IGV({{ params.user.igv|raw }}): {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoIGV|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% if doc.mtoISC %}
+                <tr>
+                    <td align="right"><strong>ISC: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoISC|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+            {% if  doc.sumOtrosCargos %}
+                <tr>
+                    <td align="right"><strong>Otros Cargos: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.sumOtrosCargos|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+            {% if doc.mtoOtrosTributos %}
+                <tr>
+                    <td align="right"><strong>Otros Tributos: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span>{{ doc.mtoOtrosTributos|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+                <tr>
+                    <td align="right"><strong>Importe Total: {{ moneda }}</strong></td>
+                    <td width="120" align="right"><span id="ride-importeTotal" class="ride-importeTotal">{{ doc.mtoImpVenta|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% if doc.perception and doc.perception.mto %}
+                {% set perc = doc.perception %}
+                {% set soles = 'PEN'|catalog('02') %}
+                <tr>
+                    <td align="right"><strong>Percepción:</strong></td>
+                    <td width="120" align="right"><span>{{ soles }}  {{ perc.mto|number_format(2, '.', ',') }}</span></td>
+                </tr>
+                <tr>
+                    <td align="right"><strong>Total a Pagar:</strong></td>
+                    <td width="120" align="right"><span>{{ soles }} {{ perc.mtoTotal|number_format(2, '.', ',') }}</span></td>
+                </tr>
+            {% endif %}
+        </table>
+    </div>
+    <hr>
+    <div class="pie">
+        <table width="100%">
+            <tr>
+                <td>
+                    <strong>SON: {{ legend(doc.legends, '1000') }}</strong>
+                </td>
+            </tr>
+            {% for leg in doc.legends %}
+            {% if leg.code != '1000' %}
+                <tr>
+                    <td>
+                        <strong>{{ leg.value }}</strong>
+                    </td>
+                </tr>
+            {% endif %}
+            {% endfor %}
+            {% if params.user.forma_pago %}
+              <tr>
+                <td>&nbsp;</td>
+              </tr>
+              <tr>
+                <td><strong>FORMA DE PAGO:</strong></td>
+              </tr>
+              <tr>
+                <td>{{ params.user.forma_pago }}</td>
+              </tr>
+            {% endif %}
+            {% if doc.guias %}
+                <tr>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <td><strong>GUIAS:</strong></td>
+                </tr>
+                <tr>
+                  <td>
+                    {% for guia in doc.guias %}
+                      {{ guia.nroDoc }},&nbsp;
+                    {% endfor %}
+                  </td>
+                </tr>
+            {% endif %}
+            {% if params.user.observacion %}
+              <tr>
+                  <td>&nbsp;</td>
+              </tr>
+              <tr>
+                  <td><strong>OBSERVACION:</strong></td>
+              </tr>
+              <tr>
+                  <td>{{ params.user.observacion }}</td>
+              </tr>
+            {% endif %}
+        </table>
+    </div>
+    {% if max_items is defined and doc.details|length > max_items %}
+        <div style="page-break-after:always;"></div>
+    {% endif %}
+    <div id="final">
+        <table>
+            <tr>
+                <td width="100%">
+                    <p>
+                        Representación impresa de la <strong>{{ name }} ELECTRÓNICA</strong> generada desde el sistema de facturación de <strong>{{ cp.razonSocial }}</strong>, consulte en <strong>facturas.winwaresac.com</strong>, autorizado mediante la Resolución <strong>No. {{ params.user.resolucion }}</strong>
+                    </p>
+                    {% if params.system.hash is defined and params.system.hash%}
+                        <strong>Resumen:</strong> {{ params.system.hash }}<br>
+                    {% endif %}
+                </td>
+                <td>
+                    <img src="{{ qrCode(doc)|image_b64 }}" alt="Qr Image">
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
