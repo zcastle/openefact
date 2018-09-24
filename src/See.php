@@ -17,7 +17,7 @@ use Ob\Ws\Sender;
 class See extends SeeBase {
 
   public function __construct(){
-    
+
   }
 
   public function enviar(DocumentInterface $document) {
@@ -57,9 +57,9 @@ class See extends SeeBase {
     return $result;
   }
 
-  public function guardarPdf(DocumentInterface $document){
+  /*public function guardarPdf(DocumentInterface $document){
     $this->guardarPdf($document);
-  }
+  }*/
 
   private function enviarSunat($document, $xml){
     $client = new SoapClient();
@@ -81,7 +81,7 @@ class See extends SeeBase {
 
   private function validarSchema($xml){
     $validator = new SchemaValidator();
-
+    //$validator->setVersion(SchemaValidator::VERSION20);
     if ($validator->validate($xml)) {
       return new Result(true);
     } else {
